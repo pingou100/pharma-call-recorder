@@ -1,5 +1,4 @@
-# Kill any stale processes before starting
-run = "pkill -9 python 2>/dev/null || true && python main.py"
+run = "bash start.sh"
 
 modules = ["python-3.11"]
 
