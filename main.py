@@ -2,8 +2,8 @@
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Optional, List
 import anthropic
@@ -29,6 +29,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Serve static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Load doctors database and initialize matcher
 DOCTORS = load_doctors("doctors.json")
 doctor_matcher = DoctorMatcher(DOCTORS)
@@ -45,6 +48,7 @@ class ConversationResponse(BaseModel):
     doctor_candidates: Optional[List[dict]] = None  # Multiple possible matches
     needs_doctor_confirmation: bool = False
     is_complete: bool = False
+    confirmed_onekey_id: Optional[str] = None  # NEW: Send confirmed ID back to frontend
 
 # System prompt for Claude - CRITICAL: Never auto-select doctors
 SYSTEM_PROMPT = """You are an AI assistant helping pharmaceutical sales representatives document their doctor visits.
@@ -56,15 +60,37 @@ CRITICAL RULES FOR DOCTOR IDENTIFICATION:
 4. If multiple doctors match (e.g., multiple "Dr. Dubois"), present ALL options and ask which one
 5. Never proceed to finalize a call without explicit doctor confirmation
 
+CRITICAL FORMATTING FOR CHOICES:
+When presenting choices to the user (doctor disambiguation, brand selection, framework options), ALWAYS use numbered lists for clarity:
+
+Example for doctor disambiguation:
+"I found 4 doctors named Dubois in the database:
+
+1. Dr. Marie Dubois - Cardiology at CHU Charleroi, Charleroi
+2. Dr. Jean Dubois - Neurology at Hôpital Erasme, Brussels  
+3. Dr. Pierre Dubois - Cardiology at AZ Sint-Jan, Bruges
+4. Dr. Sophie Dubois - Rheumatology at CHR Liège, Liège
+
+Which one did you visit? Please tell me the number or describe which doctor."
+
+Example for brand selection:
+"Which brand did you discuss?
+
+1. CardioMax (cardiovascular)
+2. DiabControl (diabetes)
+3. OncoRX (oncology)
+
+Please select by number or name."
+
 Your role:
 1. Have a natural conversation to extract call details (brand discussed, key points, next actions)
 2. When doctor info is mentioned, find matching candidates and ask for confirmation
-3. Present doctor options clearly: "I found X doctors matching that description: [list with specialty, hospital, city]"
+3. Present doctor options clearly with numbered lists
 4. Wait for explicit confirmation before marking doctor as confirmed
 5. Once doctor is confirmed AND all call details collected, mark as ready to finalize
 
 When you have doctor candidates, respond with:
-- Your conversational message asking for confirmation
+- Your conversational message asking for confirmation (use numbered lists!)
 - JSON block with extracted data
 - DOCTOR_CANDIDATES section listing all matches
 
@@ -90,8 +116,10 @@ DOCTOR_CANDIDATES: [list onekey_id values of matches, e.g., BE-HCP-00001, BE-HCP
 Example conversation:
 Rep: "Just visited Dr. Dubois in Charleroi"
 You: "I found 2 doctors named Dubois in Charleroi:
+
 1. Dr. Marie Dubois - Cardiology, CHU Charleroi
 2. Dr. Olivier Dubois - Cardiology, AZ Sint-Jan
+
 Which one was it?"
 
 Rep: "The cardiologist at CHU Charleroi"
@@ -118,20 +146,17 @@ except Exception as e:
     print(f"❌ Failed to initialize: {e}")
     anthropic_client = None
 
-# Serve static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
 @app.get("/")
-async def root():
-    """Serve the frontend HTML"""
+async def serve_frontend():
+    """Serve the main frontend"""
     return FileResponse("static/index.html")
 
 @app.get("/health")
-async def health():
+async def health_check():
     return {
         "service": "Pharma Call Recorder POC",
         "status": "running",
-        "version": "0.2.0 - Fuzzy Doctor Matching",
+        "version": "0.3.0 - Numbered Lists & Doctor Confirmation Fix",
         "doctors_loaded": len(DOCTORS),
         "anthropic_client": "ready" if anthropic_client else "not configured"
     }
@@ -222,6 +247,7 @@ async def conversation(request: ConversationRequest):
         doctor_candidates = None
         needs_confirmation = False
         is_complete = False
+        confirmed_onekey_id_from_response = None
         
         # Look for JSON block
         if "```json" in assistant_message:
@@ -230,6 +256,13 @@ async def conversation(request: ConversationRequest):
                 json_end = assistant_message.find("```", json_start)
                 json_str = assistant_message[json_start:json_end].strip()
                 extracted_data = json.loads(json_str)
+                
+                # NEW: Extract confirmed OneKey ID from JSON if present
+                if extracted_data and extracted_data.get("doctor_info"):
+                    confirmed_id = extracted_data["doctor_info"].get("confirmed_onekey_id")
+                    if confirmed_id:
+                        confirmed_onekey_id_from_response = confirmed_id
+                        print(f"[DEBUG] Doctor confirmed in response: {confirmed_id}")
             except json.JSONDecodeError as e:
                 print(f"[DEBUG] JSON parse error: {e}")
         
@@ -248,8 +281,7 @@ async def conversation(request: ConversationRequest):
             needs_confirmation = len(doctor_candidates) > 0
         
         # Alternatively, use doctor info from extracted data to search
-        # BUT ONLY if doctor is not already confirmed
-        if extracted_data and extracted_data.get("doctor_info") and not doctor_candidates and not request.confirmed_onekey_id:
+        if extracted_data and extracted_data.get("doctor_info") and not doctor_candidates and not confirmed_onekey_id_from_response:
             doctor_info = extracted_data["doctor_info"]
             
             # Search using mentioned info
@@ -268,7 +300,7 @@ async def conversation(request: ConversationRequest):
         # Check if complete (has brand, doctor confirmed, and call details)
         if extracted_data:
             has_brand = bool(extracted_data.get("brand"))
-            has_doctor = bool(extracted_data.get("doctor_info", {}).get("confirmed_onekey_id"))
+            has_doctor = bool(confirmed_onekey_id_from_response or request.confirmed_onekey_id)
             has_call_data = bool(extracted_data.get("call_objectives") or extracted_data.get("key_discussion_points"))
             
             is_complete = has_brand and has_doctor and has_call_data
@@ -278,7 +310,8 @@ async def conversation(request: ConversationRequest):
             extracted_data=extracted_data,
             doctor_candidates=doctor_candidates,
             needs_doctor_confirmation=needs_confirmation,
-            is_complete=is_complete
+            is_complete=is_complete,
+            confirmed_onekey_id=confirmed_onekey_id_from_response  # NEW: Return confirmed ID to frontend
         )
         
     except Exception as e:
@@ -310,7 +343,7 @@ async def finalize_call(call_data: dict):
         "audit_trail": {
             "created_at": datetime.utcnow().isoformat(),
             "source": "voice_recording",
-            "version": "POC-0.2.0",
+            "version": "POC-0.3.0",
             "onekey_id": call_data["onekey_id"]
         }
     }
