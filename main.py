@@ -59,6 +59,8 @@ CRITICAL RULES FOR DOCTOR IDENTIFICATION:
 3. The rep MUST explicitly confirm "Yes, that's the one" or select from options before proceeding
 4. If multiple doctors match (e.g., multiple "Dr. Dubois"), present ALL options and ask which one
 5. Never proceed to finalize a call without explicit doctor confirmation
+6. **CRITICAL**: Once a doctor is confirmed, ALWAYS refer to THAT EXACT DOCTOR by name throughout the rest of the conversation - NEVER switch to a different doctor
+7. **CRITICAL**: If you see "[SYSTEM: Rep confirmed doctor: Dr. X...]" in the context, that is THE ONLY doctor for this call - do not mention any other doctor names
 
 CRITICAL FORMATTING FOR CHOICES:
 When presenting choices to the user (doctor disambiguation, brand selection, framework options), ALWAYS use numbered lists for clarity:
@@ -87,7 +89,8 @@ Your role:
 2. When doctor info is mentioned, find matching candidates and ask for confirmation
 3. Present doctor options clearly with numbered lists
 4. Wait for explicit confirmation before marking doctor as confirmed
-5. Once doctor is confirmed AND all call details collected, mark as ready to finalize
+5. **Once doctor is confirmed, ALWAYS use that doctor's name in all subsequent responses**
+6. Once doctor is confirmed AND all call details collected, mark as ready to finalize
 
 When you have doctor candidates, respond with:
 - Your conversational message asking for confirmation (use numbered lists!)
@@ -126,7 +129,11 @@ Rep: "The cardiologist at CHU Charleroi"
 You: "Got it - Dr. Marie Dubois, Cardiology at CHU Charleroi. Is that correct?"
 
 Rep: "Yes"
-You: [NOW mark as confirmed] "Perfect! What did you discuss about [brand]?"
+You: [NOW mark as confirmed in JSON with confirmed_onekey_id] "Perfect! Dr. Marie Dubois confirmed. What did you discuss with her about [brand]?"
+
+Rep: "We talked about CardioMax"
+You: "Great! What were the main points you discussed with Dr. Marie Dubois about CardioMax?"
+[ALWAYS use "Dr. Marie Dubois" - never switch to a different doctor name]
 """
 
 # Create Anthropic client once at startup
@@ -151,12 +158,17 @@ async def serve_frontend():
     """Serve the main frontend"""
     return FileResponse("static/index.html")
 
+@app.get("/favicon.ico")
+async def favicon():
+    """Return empty favicon to prevent 404 errors"""
+    return FileResponse("static/favicon.ico") if os.path.exists("static/favicon.ico") else ""
+
 @app.get("/health")
 async def health_check():
     return {
         "service": "Pharma Call Recorder POC",
         "status": "running",
-        "version": "0.3.0 - Numbered Lists & Doctor Confirmation Fix",
+        "version": "0.3.1 - Doctor Context Fix & Port Alignment",
         "doctors_loaded": len(DOCTORS),
         "anthropic_client": "ready" if anthropic_client else "not configured"
     }
@@ -215,7 +227,9 @@ async def conversation(request: ConversationRequest):
         if request.confirmed_onekey_id:
             confirmed_doctor = doctor_matcher.get_by_onekey_id(request.confirmed_onekey_id)
             if confirmed_doctor:
-                context_parts.append(f"\n[SYSTEM: Rep confirmed doctor: {confirmed_doctor['full_name']} ({confirmed_doctor['onekey_id']}) - {confirmed_doctor['specialty']}, {confirmed_doctor['hospital']}]")
+                context_message = f"\n[SYSTEM: Rep confirmed doctor: {confirmed_doctor['full_name']} ({confirmed_doctor['onekey_id']}) - {confirmed_doctor['specialty']}, {confirmed_doctor['hospital']}]"
+                context_parts.append(context_message)
+                print(f"[DEBUG] Adding confirmed doctor context: {confirmed_doctor['full_name']}")
         
         messages.append({
             "role": "user",
@@ -224,6 +238,7 @@ async def conversation(request: ConversationRequest):
         
         # Call Claude API
         print(f"\n[DEBUG] Calling Claude API with {len(messages)} messages")
+        print(f"[DEBUG] Last message content: {messages[-1]['content'][:200]}...")  # First 200 chars
         response = anthropic_client.messages.create(
             model="claude-sonnet-4-20250514",
             max_tokens=2000,
@@ -343,7 +358,7 @@ async def finalize_call(call_data: dict):
         "audit_trail": {
             "created_at": datetime.utcnow().isoformat(),
             "source": "voice_recording",
-            "version": "POC-0.3.0",
+            "version": "POC-0.3.1",
             "onekey_id": call_data["onekey_id"]
         }
     }
