@@ -2,6 +2,8 @@
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, List
 import anthropic
@@ -116,8 +118,16 @@ except Exception as e:
     print(f"❌ Failed to initialize: {e}")
     anthropic_client = None
 
+# Serve static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 @app.get("/")
 async def root():
+    """Serve the frontend HTML"""
+    return FileResponse("static/index.html")
+
+@app.get("/health")
+async def health():
     return {
         "service": "Pharma Call Recorder POC",
         "status": "running",
@@ -320,4 +330,4 @@ async def finalize_call(call_data: dict):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=5000)
