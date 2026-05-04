@@ -248,7 +248,8 @@ async def conversation(request: ConversationRequest):
             needs_confirmation = len(doctor_candidates) > 0
         
         # Alternatively, use doctor info from extracted data to search
-        if extracted_data and extracted_data.get("doctor_info") and not doctor_candidates:
+        # BUT ONLY if doctor is not already confirmed
+        if extracted_data and extracted_data.get("doctor_info") and not doctor_candidates and not request.confirmed_onekey_id:
             doctor_info = extracted_data["doctor_info"]
             
             # Search using mentioned info
