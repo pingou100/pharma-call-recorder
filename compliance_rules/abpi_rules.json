@@ -1,0 +1,256 @@
+{
+  "version": "2024.1-MVP",
+  "effective_date": "2025-01-01",
+  "source": "ABPI Code of Practice 2024",
+  "description": "MVP subset: Critical and high-risk violations only for Phase 2 demo",
+  "rules": {
+    "critical_violations": [
+      {
+        "rule_id": "ABPI-CRIT-001",
+        "clause": "3.1",
+        "title": "Pre-Marketing Authorization Promotion",
+        "description": "Promoting medicine before marketing authorisation granted",
+        "keywords": ["pre-approval", "coming soon", "pending approval", "awaiting license", "not yet approved", "will be available"],
+        "severity": "CRITICAL",
+        "sanctions": ["Public reprimand", "Breach of Clause 2", "Mandatory audit"],
+        "detection_patterns": [
+          "mentioned product without marketing authorisation",
+          "discussed timeline for approval",
+          "suggested prescribing before license",
+          "promoted unapproved indication"
+        ]
+      },
+      {
+        "rule_id": "ABPI-CRIT-002",
+        "clause": "11.2",
+        "title": "Off-Label Promotion",
+        "description": "Promoting indications not in marketing authorisation (SPC)",
+        "keywords": ["off-label", "unapproved indication", "not licensed for", "outside SPC", "beyond approved use", "unapproved population"],
+        "severity": "CRITICAL",
+        "sanctions": ["Breach of Clause 2", "Corrective statement", "Public reprimand", "Mandatory audit"],
+        "detection_patterns": [
+          "discussed use outside SPC",
+          "mentioned unapproved indication",
+          "suggested off-label use",
+          "promoted pediatric use when not approved",
+          "discussed dosing outside SPC guidelines"
+        ]
+      },
+      {
+        "rule_id": "ABPI-CRIT-003",
+        "clause": "3.5",
+        "title": "Personal Gifts Prohibited",
+        "description": "Gifts for personal benefit are strictly prohibited",
+        "keywords": ["gift", "entertainment tickets", "cash", "personal benefit", "voucher", "concert tickets", "sports tickets", "spa voucher"],
+        "severity": "CRITICAL",
+        "sanctions": ["Breach of inducement rules", "Public reprimand", "Corrective action"],
+        "detection_patterns": [
+          "offered tickets",
+          "mentioned gift",
+          "promised cash",
+          "entertainment offer",
+          "personal voucher",
+          "non-professional benefit"
+        ]
+      },
+      {
+        "rule_id": "ABPI-CRIT-004",
+        "clause": "5.2",
+        "title": "Unethical Conduct",
+        "description": "Personnel must maintain high standards of ethical conduct",
+        "keywords": ["bribe", "kickback", "inducement", "unethical", "inappropriate payment", "quid pro quo"],
+        "severity": "CRITICAL",
+        "sanctions": ["Public reprimand", "Breach of Clause 2", "Possible criminal investigation"],
+        "detection_patterns": [
+          "offered payment for prescriptions",
+          "quid pro quo arrangement",
+          "inappropriate financial inducement",
+          "kickback scheme",
+          "pay for prescribing"
+        ]
+      }
+    ],
+    "high_risk_violations": [
+      {
+        "rule_id": "ABPI-HIGH-001",
+        "clause": "6.4",
+        "title": "Unqualified Safety Claims",
+        "description": "Cannot state 'no adverse reactions', 'safe', or 'no toxic hazards' without qualification",
+        "keywords": ["no side effects", "safe", "no adverse reactions", "perfectly safe", "no toxic hazards", "no risk", "demonstrated safety"],
+        "severity": "HIGH",
+        "sanctions": ["Breach of Clause 6.4", "Corrective statement required"],
+        "detection_patterns": [
+          "claimed no adverse reactions",
+          "stated product is safe without qualification",
+          "said no side effects",
+          "claimed zero risk",
+          "unqualified safety statement"
+        ],
+        "compliant_alternative": "Safety profile consistent with SPC, with most common adverse reactions being [list from SPC]"
+      },
+      {
+        "rule_id": "ABPI-HIGH-002",
+        "clause": "6.6",
+        "title": "Competitor Disparagement",
+        "description": "Cannot disparage competitors' medicines, products or activities",
+        "keywords": ["outdated", "inferior", "worse than", "old technology", "doesn't work", "ineffective", "poor quality"],
+        "severity": "HIGH",
+        "sanctions": ["Breach of Clause 6.6", "Corrective action required"],
+        "detection_patterns": [
+          "disparaged competitor product",
+          "called competitor outdated",
+          "claimed competitor inferior",
+          "inflammatory comparison",
+          "unprofessional competitor reference"
+        ],
+        "compliant_alternative": "In head-to-head trial X, Product A demonstrated [specific result] compared to Product B [specific result], with p-value of [X]"
+      },
+      {
+        "rule_id": "ABPI-HIGH-003",
+        "clause": "10.1",
+        "title": "Inappropriate Hospitality",
+        "description": "Lavish/extravagant venues prohibited, hospitality must be secondary to educational purpose",
+        "keywords": ["luxury", "5-star", "resort", "entertainment", "spouse", "Michelin star", "extravagant", "lavish"],
+        "severity": "HIGH",
+        "sanctions": ["Breach of hospitality rules", "Corrective action", "Mandatory audit"],
+        "detection_patterns": [
+          "offered extravagant venue",
+          "mentioned spouse attendance",
+          "entertainment as primary purpose",
+          "luxury hotel meeting",
+          "excessive hospitality"
+        ],
+        "compliant_alternative": "Educational meeting with modest meal (within £75 subsistence limit), educational agenda primary"
+      },
+      {
+        "rule_id": "ABPI-HIGH-004",
+        "clause": "6.1",
+        "title": "Unsubstantiated Claims",
+        "description": "Claims must be accurate, balanced, fair, objective, and capable of substantiation",
+        "keywords": ["best in class", "most effective", "guaranteed results", "proven superiority", "unmatched efficacy"],
+        "severity": "HIGH",
+        "sanctions": ["Request for substantiation", "Corrective action if unsubstantiated"],
+        "detection_patterns": [
+          "made superlative claim without evidence",
+          "claimed superiority without trial data",
+          "unbalanced presentation",
+          "exaggerated efficacy",
+          "unsubstantiable statement"
+        ],
+        "compliant_alternative": "In trial X (n=Y), Product demonstrated Z% reduction in endpoint (p<0.001), compared to standard of care"
+      },
+      {
+        "rule_id": "ABPI-HIGH-005",
+        "clause": "10.8",
+        "title": "Subsistence Limit Exceeded",
+        "description": "Subsistence must not exceed £75 per person excluding VAT",
+        "keywords": ["dinner", "expensive restaurant", "Michelin", "fine dining", "luxury meal", "over £75"],
+        "severity": "HIGH",
+        "sanctions": ["Breach of hospitality limits", "Corrective action"],
+        "detection_patterns": [
+          "mentioned subsistence over £75",
+          "expensive restaurant",
+          "Michelin-starred venue",
+          "luxury dining",
+          "excessive meal cost"
+        ],
+        "compliant_alternative": "Modest meal within £75 subsistence limit, provided during educational meeting"
+      }
+    ],
+    "medium_risk_violations": [
+      {
+        "rule_id": "ABPI-MED-001",
+        "clause": "5.7",
+        "title": "Inappropriate Audience",
+        "description": "Material should only be provided to those with legitimate interest",
+        "keywords": ["not my specialty", "don't prescribe this", "not my area", "wrong specialty"],
+        "severity": "MEDIUM",
+        "sanctions": ["Warning", "Request to cease promotion to inappropriate audience"],
+        "detection_patterns": [
+          "promoted to HCP outside therapeutic area",
+          "discussed with non-prescribing specialty",
+          "material provided to irrelevant audience"
+        ]
+      },
+      {
+        "rule_id": "ABPI-MED-002",
+        "clause": "6.5",
+        "title": "Misuse of 'New'",
+        "description": "Cannot use 'new' for products available >12 months in UK",
+        "keywords": ["new product", "new indication", "newly available", "latest product"],
+        "severity": "MEDIUM",
+        "sanctions": ["Corrective action"],
+        "detection_patterns": [
+          "called product 'new' when available >12 months",
+          "described indication as 'new' when promoted >12 months"
+        ]
+      }
+    ],
+    "documentation_requirements": [
+      {
+        "rule_id": "ABPI-DOC-001",
+        "clause": "28",
+        "title": "Disclosure of Transfers of Value",
+        "description": "Must disclose transfers of value to HCPs, ORDMs, healthcare organisations",
+        "required_data": [
+          "HCP OneKey ID or equivalent",
+          "Transfer of value amount (£)",
+          "Nature of transfer (registration, travel, accommodation, subsistence, fees)",
+          "Date of transfer",
+          "Event/meeting details if applicable"
+        ]
+      },
+      {
+        "rule_id": "ABPI-DOC-002",
+        "clause": "10.4",
+        "title": "Written Agreement Required",
+        "description": "Support for HCP event attendance requires written agreement in advance",
+        "required_data": [
+          "Categories of cost covered (registration, accommodation, travel, subsistence)",
+          "Event details (date, location, agenda)",
+          "Educational rationale for attendance",
+          "HCP signature confirming terms"
+        ]
+      },
+      {
+        "rule_id": "ABPI-DOC-003",
+        "clause": "5.2",
+        "title": "Call Documentation",
+        "description": "Maintain audit trail of all HCP interactions",
+        "required_data": [
+          "Date and time of call",
+          "HCP name and OneKey ID",
+          "Brand(s) discussed",
+          "Key discussion points",
+          "Materials provided",
+          "Next actions agreed",
+          "Compliance check results"
+        ]
+      }
+    ]
+  },
+  "selling_framework_requirements": {
+    "description": "Generic 6-phase selling framework compliance checks",
+    "required_phases": [
+      "Purposeful Planning",
+      "Bold Opening",
+      "Uncovering Needs",
+      "Tailored Solutions",
+      "Handling Questions & Objections",
+      "Call to Action"
+    ],
+    "phase_validation": {
+      "Purposeful Planning": {
+        "required": true,
+        "must_have": ["specific_call_objective"],
+        "violation_if_missing": "No clear call objective documented"
+      },
+      "Call to Action": {
+        "required": true,
+        "must_have": ["voluntary_commitment", "specific_action", "timeline"],
+        "violation_if_missing": "No Voluntary & Active commitment secured",
+        "valid_commitment_pattern": "Specific action + explicit timeline + HCP agreement"
+      }
+    }
+  }
+}
