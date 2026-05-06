@@ -4,400 +4,757 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pharma Call Recorder</title>
-    <link rel="icon" href="data:,">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #f5f5f5;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        header {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            min-height: 100vh;
             padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
         }
-
-        h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .subtitle {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            margin-top: 4px;
-        }
-
-        .status-indicator {
-            width: 8px;
-            height: 8px;
-            background: #4ade80;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .new-call-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-
-        .new-call-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        #container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            max-width: 900px;
-            margin: 0 auto;
+        
+        .container {
+            max-width: 700px;
             width: 100%;
-            padding: 20px;
-            overflow: hidden;
-        }
-
-        #chat-container {
-            flex: 1;
             background: white;
-            border-radius: 12px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            padding: 30px;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            max-height: 90vh;
         }
-
-        #messages {
+        
+        h1 { color: #333; margin-bottom: 10px; font-size: 28px; text-align: center; }
+        .subtitle { color: #666; margin-bottom: 20px; text-align: center; font-size: 14px; }
+        
+        .status-badge { 
+            display: inline-block; 
+            padding: 4px 12px; 
+            border-radius: 12px; 
+            font-size: 11px; 
+            font-weight: 600; 
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .status-badge.info { background: #d1ecf1; color: #0c5460; }
+        .status-badge.success { background: #d4edda; color: #155724; }
+        .status-badge.warning { background: #fff3cd; color: #856404; }
+        
+        .conversation {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            min-height: 300px;
         }
-
+        
         .message {
-            margin-bottom: 16px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .message.user {
-            align-items: flex-end;
-        }
-
-        .message-content {
-            max-width: 70%;
+            margin-bottom: 15px;
             padding: 12px 16px;
             border-radius: 12px;
-            line-height: 1.5;
-            white-space: pre-wrap;
+            max-width: 85%;
+            word-wrap: break-word;
         }
-
-        .message.user .message-content {
-            background: #667eea;
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-
-        .message.assistant .message-content {
-            background: #f3f4f6;
-            color: #1f2937;
-            border-bottom-left-radius: 4px;
-        }
-
-        .message.system .message-content {
-            background: #fef3c7;
-            color: #92400e;
-            max-width: 100%;
-            text-align: center;
-            font-size: 0.9rem;
-        }
-
-        #input-area {
-            border-top: 1px solid #e5e7eb;
-            padding: 20px;
-            background: #fafafa;
-        }
-
-        #input-area.disabled {
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        .input-container {
-            display: flex;
-            gap: 12px;
-        }
-
-        #user-input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 2px solid #e5e7eb;
+        
+        .message.user { background: #667eea; color: white; margin-left: auto; text-align: right; }
+        .message.assistant { background: white; color: #333; border: 1px solid #e0e0e0; }
+        .message-label { font-size: 11px; font-weight: 600; margin-bottom: 4px; opacity: 0.8; }
+        .message-content { font-size: 14px; line-height: 1.5; }
+        
+        .speaking-indicator {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+            background: #e7f3ff;
             border-radius: 8px;
-            font-size: 1rem;
-            resize: none;
-            font-family: inherit;
-            min-height: 50px;
-            max-height: 150px;
+            margin-bottom: 15px;
         }
-
-        #user-input:focus {
+        .speaking-indicator.active { display: flex; }
+        .sound-wave {
+            width: 4px;
+            height: 20px;
+            background: #2196F3;
+            border-radius: 2px;
+            animation: wave 1.2s ease-in-out infinite;
+        }
+        .sound-wave:nth-child(2) { animation-delay: 0.1s; }
+        .sound-wave:nth-child(3) { animation-delay: 0.2s; }
+        .sound-wave:nth-child(4) { animation-delay: 0.3s; }
+        @keyframes wave { 0%, 100% { height: 10px; } 50% { height: 30px; } }
+        
+        .input-section {
+            border-top: 2px solid #f0f0f0;
+            padding-top: 20px;
+        }
+        
+        .transcription {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            min-height: 50px;
+            border-left: 4px solid #667eea;
+        }
+        .transcription-label { font-size: 11px; font-weight: 600; color: #667eea; margin-bottom: 6px; }
+        .transcription-text { font-size: 13px; color: #333; line-height: 1.4; }
+        .transcription-text.interim { color: #999; font-style: italic; }
+        
+        /* Dual Input - STACKED VERTICALLY */
+        .dual-input {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .text-input-wrapper {
+            width: 100%;
+            position: relative;
+        }
+        
+        .text-input {
+            width: 100%;
+            padding: 12px 50px 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            min-height: 48px;
+            max-height: 120px;
+            transition: border-color 0.2s;
+        }
+        
+        .text-input:focus {
             outline: none;
             border-color: #667eea;
         }
-
-        #send-btn {
+        
+        .send-btn {
+            position: absolute;
+            right: 8px;
+            bottom: 8px;
             background: #667eea;
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
             transition: all 0.2s;
         }
-
-        #send-btn:hover:not(:disabled) {
+        
+        .send-btn:hover {
             background: #5568d3;
         }
-
-        #send-btn:disabled {
-            opacity: 0.5;
+        
+        .send-btn:disabled {
+            background: #ccc;
             cursor: not-allowed;
         }
-
-        .finalize-btn {
-            background: #22c55e;
+        
+        /* Voice Button - FULL WIDTH, BELOW TEXT INPUT */
+        .push-to-talk {
+            width: 100%;
+            height: 60px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .push-to-talk:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+        
+        .push-to-talk:active {
+            transform: scale(0.95);
+        }
+        
+        .push-to-talk.recording {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 12px rgba(255, 65, 108, 0.3); }
+            50% { box-shadow: 0 6px 20px rgba(255, 65, 108, 0.6); }
+        }
+        
+        .voice-status {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            margin-top: 8px;
+            min-height: 18px;
+        }
+        
+        .voice-status.recording {
+            color: #ff416c;
+            font-weight: 600;
+        }
+        
+        .settings {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .settings label {
+            font-size: 12px;
+            color: #333;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .settings input[type="checkbox"] {
+            margin: 0;
+        }
+        
+        .settings select {
+            flex: 1;
+            min-width: 200px;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        
+        .controls { 
+            display: flex; 
+            gap: 10px;
+        }
+        
+        button {
+            flex: 1;
+            background: #667eea;
             color: white;
             border: none;
-            padding: 14px 28px;
+            padding: 12px 16px;
             border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
+            font-size: 14px;
             font-weight: 600;
-            margin-top: 12px;
-            width: 100%;
+            cursor: pointer;
             transition: all 0.2s;
         }
-
-        .finalize-btn:hover {
-            background: #16a34a;
-        }
-
-        .loading {
-            display: inline-block;
+        button:hover { background: #5568d3; transform: translateY(-1px); }
+        button.secondary { background: #6c757d; }
+        button.secondary:hover { background: #5a6268; }
+        button.success { background: #28a745; }
+        button.success:hover { background: #218838; }
+        
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
             width: 16px;
             height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 8px;
         }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .permission-helper {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        
+        .permission-helper strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .permission-link {
+            background: #ffc107;
+            color: #333;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 8px;
+        }
+        
+        .permission-link:hover {
+            background: #ffb300;
         }
     </style>
 </head>
 <body>
-    <header>
-        <div>
-            <h1><span class="status-indicator"></span>Pharma Call Recorder</h1>
-            <div class="subtitle">AI-assisted visit documentation</div>
+    <div class="container">
+        <h1>🏥 Pharma Call Recorder</h1>
+        <p class="subtitle">Voice or text-enabled call documentation</p>
+        
+        <div style="text-align: center;">
+            <span id="statusBadge" class="status-badge info">Ready to record</span>
         </div>
-        <button class="new-call-btn" onclick="resetConversation()">+ New Call</button>
-    </header>
-
-    <div id="container">
-        <!-- Chat Container - Pure conversational interface -->
-        <div id="chat-container">
-            <div id="messages"></div>
-            <div id="input-area">
-                <div class="input-container">
+        
+        <!-- Permission Helper -->
+        <div id="permissionHelper" class="permission-helper" style="display: none;">
+            <strong>⚠️ Microphone Permission Required</strong>
+            <div>Click the button below to enable microphone access in your browser settings:</div>
+            <a href="chrome://settings/content/microphone" class="permission-link" id="permissionLink">
+                Open Chrome Microphone Settings
+            </a>
+            <div style="margin-top: 8px; font-size: 11px;">Then add <strong>http://localhost:8000</strong> to the "Allow" list and reload this page.</div>
+        </div>
+        
+        <!-- Conversation -->
+        <div id="conversation" class="conversation"></div>
+        
+        <!-- Speaking Indicator -->
+        <div id="speakingIndicator" class="speaking-indicator">
+            <div class="sound-wave"></div>
+            <div class="sound-wave"></div>
+            <div class="sound-wave"></div>
+            <div class="sound-wave"></div>
+            <span>Speaking...</span>
+        </div>
+        
+        <!-- Input Section -->
+        <div class="input-section">
+            <div class="transcription">
+                <div class="transcription-label">LIVE TRANSCRIPTION</div>
+                <div id="transcriptionText" class="transcription-text">Waiting for input...</div>
+            </div>
+            
+            <!-- STACKED: Text input on top, mic button below -->
+            <div class="dual-input">
+                <div class="text-input-wrapper">
                     <textarea 
-                        id="user-input" 
-                        placeholder="Describe your doctor visit..." 
-                        onkeydown="handleKeyPress(event)"
-                        oninput="autoResize(this)"></textarea>
-                    <button id="send-btn" onclick="sendMessage()">Send</button>
+                        id="textInput" 
+                        class="text-input" 
+                        placeholder="Type your message or use voice button..."
+                        rows="1"
+                    ></textarea>
+                    <button id="sendBtn" class="send-btn" title="Send message">↑</button>
                 </div>
-                <button id="finalize-btn" class="finalize-btn" style="display: none;" onclick="finalizeCall()">
-                    ✓ Finalize Call Record
-                </button>
+                <button id="pushToTalk" class="push-to-talk" title="Hold to talk">🎤 Hold to speak</button>
+            </div>
+            
+            <div id="voiceStatus" class="voice-status">Press and hold mic or type</div>
+            
+            <!-- Settings -->
+            <div class="settings">
+                <label>
+                    <input type="checkbox" id="autoPlayback" checked>
+                    Auto-play
+                </label>
+                <label style="flex: 1;">
+                    Voice: 
+                    <select id="voiceSelect">
+                        <option>Loading voices...</option>
+                    </select>
+                </label>
+            </div>
+            
+            <!-- Controls -->
+            <div class="controls">
+                <button id="clearBtn" class="secondary">Clear Chat</button>
+                <button id="finalizeBtn" class="success">Finalize Call</button>
             </div>
         </div>
     </div>
-
+    
     <script>
+        const API_URL = window.location.origin.includes('repl.co') ? window.location.origin : 'http://localhost:8000';
+        
         let conversationHistory = [];
-        let confirmedOnekeyId = null;
+        let isRecording = false;
+        let recognition = null;
+        let synthesis = window.speechSynthesis;
+        let availableVoices = [];
+        let interimTranscript = '';
+        let finalTranscript = '';
+        let extractedData = null;
+        let isButtonPressed = false;
         let isComplete = false;
-
-        const messagesContainer = document.getElementById('messages');
-        const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
-        const inputArea = document.getElementById('input-area');
-        const finalizeBtn = document.getElementById('finalize-btn');
-
-        function autoResize(el) {
-            el.style.height = 'auto';
-            el.style.height = Math.min(el.scrollHeight, 150) + 'px';
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendMessage();
+        let confirmedOnekeyId = null;  // ← FIX #1: Track confirmed doctor
+        
+        const pushToTalkBtn = document.getElementById('pushToTalk');
+        const textInput = document.getElementById('textInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const voiceStatus = document.getElementById('voiceStatus');
+        const transcriptionText = document.getElementById('transcriptionText');
+        const conversationDiv = document.getElementById('conversation');
+        const clearBtn = document.getElementById('clearBtn');
+        const finalizeBtn = document.getElementById('finalizeBtn');
+        const autoPlaybackCheckbox = document.getElementById('autoPlayback');
+        const voiceSelect = document.getElementById('voiceSelect');
+        const speakingIndicator = document.getElementById('speakingIndicator');
+        const statusBadge = document.getElementById('statusBadge');
+        const permissionHelper = document.getElementById('permissionHelper');
+        const permissionLink = document.getElementById('permissionLink');
+        
+        // ✅ FIX: Properly load voices with retry logic
+        function initTextToSpeech() {
+            let retries = 0;
+            const maxRetries = 10;
+            
+            function loadVoices() {
+                availableVoices = synthesis.getVoices();
+                
+                if (availableVoices.length === 0 && retries < maxRetries) {
+                    retries++;
+                    setTimeout(loadVoices, 100);
+                    return;
+                }
+                
+                voiceSelect.innerHTML = '';
+                const englishVoices = availableVoices.filter(v => v.lang.startsWith('en'));
+                
+                if (englishVoices.length === 0) {
+                    voiceSelect.innerHTML = '<option>No English voices available</option>';
+                    return;
+                }
+                
+                englishVoices.forEach((voice, i) => {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.textContent = `${voice.name} (${voice.lang})`;
+                    voiceSelect.appendChild(opt);
+                });
+                
+                const preferredVoice = 
+                    englishVoices.findIndex(v => v.name.includes('Google') && v.lang === 'en-US') ||
+                    englishVoices.findIndex(v => v.lang === 'en-US' && !v.name.includes('Microsoft')) ||
+                    englishVoices.findIndex(v => v.lang === 'en-US') ||
+                    0;
+                
+                voiceSelect.value = preferredVoice;
+                console.log(`Selected voice: ${englishVoices[preferredVoice].name}`);
             }
-        }
-
-        function addMessage(role, content) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${role}`;
             
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'message-content';
-            contentDiv.textContent = content;
+            if (synthesis.onvoiceschanged !== undefined) {
+                synthesis.onvoiceschanged = loadVoices;
+            }
             
-            messageDiv.appendChild(contentDiv);
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            loadVoices();
+            setTimeout(loadVoices, 500);
         }
-
-        async function sendMessage(overrideText = null, skipUserMessage = false) {
-            const text = overrideText || userInput.value.trim();
+        
+        function speak(text) {
+            if (synthesis.speaking) synthesis.cancel();
             if (!text) return;
-
-            if (!skipUserMessage) {
-                addMessage('user', text);
-                conversationHistory.push({ role: 'user', content: text });
-                userInput.value = '';
-                userInput.style.height = 'auto';
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            const voiceIndex = parseInt(voiceSelect.value);
+            const englishVoices = availableVoices.filter(v => v.lang.startsWith('en'));
+            
+            if (englishVoices[voiceIndex]) {
+                utterance.voice = englishVoices[voiceIndex];
             }
-
-            sendBtn.disabled = true;
-            sendBtn.innerHTML = '<span class="loading"></span>';
-
+            
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            utterance.lang = 'en-US';
+            
+            utterance.onstart = () => speakingIndicator.classList.add('active');
+            utterance.onend = () => speakingIndicator.classList.remove('active');
+            
+            synthesis.speak(utterance);
+        }
+        
+        function initSpeechRecognition() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert('Speech recognition not supported. Please use Chrome or Edge.');
+                return false;
+            }
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+            
+            recognition.onstart = () => {
+                isRecording = true;
+                pushToTalkBtn.classList.add('recording');
+                voiceStatus.classList.add('recording');
+                voiceStatus.textContent = '🔴 Listening...';
+                statusBadge.textContent = 'Listening';
+                statusBadge.className = 'status-badge warning';
+            };
+            
+            recognition.onresult = (event) => {
+                interimTranscript = '';
+                let tempFinal = '';
+                
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        tempFinal += transcript + ' ';
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+                
+                if (tempFinal) finalTranscript += tempFinal;
+                
+                const displayText = finalTranscript + 
+                    (interimTranscript ? `<span class="interim">${interimTranscript}</span>` : '');
+                transcriptionText.innerHTML = displayText || 'Listening...';
+            };
+            
+            recognition.onerror = (event) => {
+                if (event.error === 'aborted' || event.error === 'no-speech') return;
+                
+                isRecording = false;
+                pushToTalkBtn.classList.remove('recording');
+                voiceStatus.classList.remove('recording');
+                
+                if (event.error === 'not-allowed') {
+                    permissionHelper.style.display = 'block';
+                    voiceStatus.textContent = '⚠️ Microphone access denied';
+                } else {
+                    voiceStatus.textContent = `Error: ${event.error}`;
+                }
+            };
+            
+            recognition.onend = () => {
+                isRecording = false;
+                pushToTalkBtn.classList.remove('recording');
+                voiceStatus.classList.remove('recording');
+                
+                if (!isButtonPressed && finalTranscript.trim()) {
+                    const textToSend = finalTranscript.trim();
+                    finalTranscript = '';
+                    interimTranscript = '';
+                    sendMessage(textToSend);
+                } else if (isButtonPressed) {
+                    try { recognition.start(); } catch(e) {}
+                } else {
+                    voiceStatus.textContent = 'Press and hold mic or type';
+                    transcriptionText.textContent = 'Waiting for input...';
+                }
+            };
+            
+            return true;
+        }
+        
+        function startRecording() {
+            if (!recognition) return;
+            isButtonPressed = true;
+            if (isRecording) return;
+            
             try {
-                const response = await fetch('/conversation', {
+                finalTranscript = '';
+                interimTranscript = '';
+                recognition.start();
+            } catch(e) {}
+        }
+        
+        function stopRecording() {
+            isButtonPressed = false;
+            if (recognition && isRecording) recognition.stop();
+        }
+        
+        pushToTalkBtn.addEventListener('contextmenu', e => e.preventDefault());
+        pushToTalkBtn.addEventListener('mousedown', e => { e.preventDefault(); startRecording(); });
+        pushToTalkBtn.addEventListener('mouseup', e => { e.preventDefault(); stopRecording(); });
+        pushToTalkBtn.addEventListener('mouseleave', e => { if (isButtonPressed) stopRecording(); });
+        pushToTalkBtn.addEventListener('touchstart', e => { e.preventDefault(); startRecording(); });
+        pushToTalkBtn.addEventListener('touchend', e => { e.preventDefault(); stopRecording(); });
+        
+        textInput.addEventListener('input', () => {
+            textInput.style.height = 'auto';
+            textInput.style.height = Math.min(textInput.scrollHeight, 120) + 'px';
+            sendBtn.disabled = !textInput.value.trim();
+        });
+        
+        textInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (textInput.value.trim()) {
+                    sendTextMessage();
+                }
+            }
+        });
+        
+        sendBtn.addEventListener('click', sendTextMessage);
+        
+        function sendTextMessage() {
+            const message = textInput.value.trim();
+            if (!message) return;
+            
+            textInput.value = '';
+            textInput.style.height = 'auto';
+            sendBtn.disabled = true;
+            
+            sendMessage(message);
+        }
+        
+        async function sendMessage(message) {
+            if (!message.trim()) return;
+            
+            addMessageToUI('user', message);
+            
+            statusBadge.textContent = 'Processing...';
+            statusBadge.className = 'status-badge info';
+            voiceStatus.innerHTML = 'Processing... <span class="spinner"></span>';
+            
+            try {
+                const response = await fetch(`${API_URL}/conversation`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: text,
-                        conversation_history: conversationHistory.slice(0, -1),
-                        confirmed_onekey_id: confirmedOnekeyId
-                    })
+                    body: JSON.stringify({ message, conversation_history: conversationHistory, confirmed_onekey_id: confirmedOnekeyId })  // ← FIX #2
                 });
-
-                const data = await response.json();
-
-                // NEW: Update confirmedOnekeyId if doctor was confirmed in this response
-                if (data.confirmed_onekey_id) {
-                    confirmedOnekeyId = data.confirmed_onekey_id;
-                    console.log('Doctor confirmed:', confirmedOnekeyId);
-                }
-
-                // Add assistant message
-                let displayMessage = data.assistant_message;
-                // Remove JSON blocks and DOCTOR_CANDIDATES from display
-                displayMessage = displayMessage.replace(/```json[\s\S]*?```/g, '').trim();
-                displayMessage = displayMessage.replace(/DOCTOR_CANDIDATES:.*$/m, '').trim();
                 
-                addMessage('assistant', displayMessage);
+                const data = await response.json();
+        
+        // FIX #3: Update confirmed doctor if backend confirms one
+        if (data.confirmed_onekey_id) {
+            confirmedOnekeyId = data.confirmed_onekey_id;
+            console.log('✅ Doctor confirmed:', confirmedOnekeyId);
+        }
+                
+                conversationHistory.push({ role: 'user', content: message });
                 conversationHistory.push({ role: 'assistant', content: data.assistant_message });
-
-                // NO MORE DOCTOR CARDS - Keep it all conversational
-                // Doctor disambiguation happens entirely through Claude's conversation
-
-                // Check if complete
+                
+                addMessageToUI('assistant', data.assistant_message);
+                
+                if (data.extracted_data) extractedData = data.extracted_data;
+                
+                // ✅ FIX: Show finalize button when ready
                 if (data.is_complete) {
                     isComplete = true;
-                    finalizeBtn.style.display = 'block';
+                    finalizeBtn.disabled = false;
+                    statusBadge.textContent = 'Ready to finalize ✓';
+                    statusBadge.className = 'status-badge success';
+                } else {
+                    isComplete = false;
+                    finalizeBtn.disabled = true;
+                    statusBadge.textContent = 'Continue recording';
+                    statusBadge.className = 'status-badge info';
                 }
-
+                
+                if (autoPlaybackCheckbox.checked) {
+                    speak(data.assistant_message.split('```')[0].trim());
+                }
+                
+                voiceStatus.textContent = 'Press and hold mic or type';
+                transcriptionText.textContent = 'Waiting for input...';
+                
             } catch (error) {
-                console.error('Error:', error);
-                addMessage('system', 'Error: Could not connect to server. Please try again.');
+                console.error(error);
+                voiceStatus.textContent = 'Error: ' + error.message;
+                statusBadge.textContent = 'Error';
+                statusBadge.className = 'status-badge warning';
             }
-
-            sendBtn.disabled = false;
-            sendBtn.textContent = 'Send';
-            userInput.focus();
         }
-
-        async function finalizeCall() {
-            if (!confirmedOnekeyId) {
-                addMessage('system', 'Error: No doctor confirmed. Cannot finalize.');
+        
+        function addMessageToUI(role, content) {
+            const div = document.createElement('div');
+            div.className = `message ${role}`;
+            const displayContent = content.split('```')[0].trim();
+            div.innerHTML = `
+                <div class="message-label">${role === 'user' ? 'YOU' : 'ASSISTANT'}</div>
+                <div class="message-content">${displayContent}</div>
+            `;
+            conversationDiv.appendChild(div);
+            conversationDiv.scrollTop = conversationDiv.scrollHeight;
+        }
+        
+        clearBtn.addEventListener('click', () => {
+            conversationHistory = [];
+            conversationDiv.innerHTML = '';
+            finalizeBtn.disabled = true;
+            confirmedOnekeyId = null;  // ← FIX #5: Reset confirmed doctor
+            extractedData = null;
+            isComplete = false;
+            statusBadge.textContent = 'Ready to record';
+            statusBadge.className = 'status-badge info';
+            transcriptionText.textContent = 'Waiting for input...';
+            textInput.value = '';
+        });
+        
+        finalizeBtn.addEventListener('click', async () => {
+            if (!confirmedOnekeyId) {  // ← FIX #4: Use tracked ID
+                alert('Cannot finalize: Doctor not confirmed');
                 return;
             }
-
-            finalizeBtn.disabled = true;
-            finalizeBtn.textContent = 'Finalizing...';
-
+            
             try {
-                const response = await fetch('/finalize', {
+                const callData = {
+                    onekey_id: confirmedOnekeyId,  // ← FIX #4
+                    brand: extractedData.brand,
+                    call_objectives: extractedData.call_objectives || [],
+                    key_discussion_points: extractedData.key_discussion_points || [],
+                    agreements_reached: extractedData.agreements_reached || [],
+                    next_actions: extractedData.next_actions || []
+                };
+                
+                const response = await fetch(`${API_URL}/finalize`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        onekey_id: confirmedOnekeyId,
-                        conversation_history: conversationHistory
-                    })
+                    body: JSON.stringify(callData)
                 });
-
-                const data = await response.json();
-                addMessage('system', `✓ Call record finalized! Record ID: ${data.record_id}`);
                 
-                // Disable further input
-                inputArea.classList.add('disabled');
-                finalizeBtn.style.display = 'none';
-
+                const data = await response.json();
+        
+        // FIX #3: Update confirmed doctor if backend confirms one
+        if (data.confirmed_onekey_id) {
+            confirmedOnekeyId = data.confirmed_onekey_id;
+            console.log('✅ Doctor confirmed:', confirmedOnekeyId);
+        }
+                alert(`✅ Call finalized!\n\nRecord ID: ${data.record_id}`);
+                clearBtn.click();
             } catch (error) {
-                console.error('Error:', error);
-                addMessage('system', 'Error: Could not finalize call. Please try again.');
-                finalizeBtn.disabled = false;
-                finalizeBtn.textContent = '✓ Finalize Call Record';
+                alert('Error: ' + error.message);
             }
-        }
-
-        function resetConversation() {
-            conversationHistory = [];
-            confirmedOnekeyId = null;
-            isComplete = false;
-            messagesContainer.innerHTML = '';
-            userInput.value = '';
-            inputArea.classList.remove('disabled');
-            finalizeBtn.style.display = 'none';
-            
-            // Add welcome message
-            addMessage('assistant', "Hello! I'm here to help you document your doctor visit. Please tell me about the visit — who you saw, what you discussed, and any next steps.");
-        }
-
-        // Initialize
-        resetConversation();
+        });
+        
+        // Handle Chrome settings link for microphone
+        permissionLink.addEventListener('click', (e) => {
+            // Chrome doesn't allow direct navigation to settings in some cases
+            // Just inform user it should work or show alternative
+            console.log('Opening Chrome microphone settings...');
+        });
+        
+        window.addEventListener('load', () => {
+            if (initSpeechRecognition()) {
+                initTextToSpeech();
+                console.log('Voice UI ready');
+            }
+            sendBtn.disabled = true;
+            finalizeBtn.disabled = true;
+        });
     </script>
 </body>
 </html>
