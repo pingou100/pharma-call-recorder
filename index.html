@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharma Call Recorder</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; display: flex; justify-content: center; align-items: center; }
+        .container { max-width: 700px; width: 100%; background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); display: flex; flex-direction: column; max-height: 90vh; overflow: hidden; }
+        .header { padding: 30px 30px 0 30px; flex-shrink: 0; }
+        h1 { color: #333; font-size: 24px; text-align: center; margin-bottom: 5px; }
+        .subtitle { color: #666; font-size: 13px; text-align: center; margin-bottom: 15px; }
+        #statusBadge { display: inline-block; padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; background: #d1ecf1; color: #0c5460; text-align: center; width: 100%; }
+        .permission-helper { background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 15px; margin: 15px 30px; border-radius: 6px; font-size: 12px; display: none; flex-shrink: 0; }
+        .permission-helper strong { display: block; margin-bottom: 6px; }
+        .permission-link { background: #ffc107; color: #333; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block; margin-top: 6px; }
+        #conversation { 
+            flex: 1; 
+            overflow-y: auto; 
+            overflow-x: hidden;
+            padding: 15px 30px; 
+            background: white; 
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        #conversation::-webkit-scrollbar { width: 6px; }
+        #conversation::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
+        #conversation::-webkit-scrollbar-thumb { background: #667eea; border-radius: 3px; }
+        #conversation::-webkit-scrollbar-thumb:hover { background: #5568d3; }
+        .message { margin-bottom: 12px; padding: 10px 14px; border-radius: 10px; max-width: 85%; word-wrap: break-word; font-size: 13px; line-height: 1.4; flex-shrink: 0; }
+        .message.user { background: #667eea; color: white; margin-left: auto
