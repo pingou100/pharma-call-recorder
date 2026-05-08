@@ -676,7 +676,7 @@
         }
 
         function selectDoctor(doctor) {
-            selectedDoctorId = doctor.id;
+            selectedDoctorId = doctor.onekey_id;
             addMessage('system', `Selected: Dr. ${doctor.name}`);
             sendMessage(`I confirm Dr. ${doctor.name}`);
         }
