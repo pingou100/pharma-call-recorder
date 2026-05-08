@@ -410,6 +410,17 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            // Request microphone permission once on page load
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    console.log('Microphone access granted');
+                    stream.getTracks().forEach(track => track.stop());
+                })
+                .catch(err => {
+                    console.log('Microphone access denied:', err);
+                    document.getElementById('permissionHelper').style.display = 'block';
+                });
+            
             initSpeechRecognition();
             loadVoices();
             setupEventListeners();

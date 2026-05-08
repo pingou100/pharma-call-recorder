@@ -87,6 +87,8 @@ You monitor for ABPI violations and provide brief, helpful feedback when detecte
 {critical_violations_text}
 
 **Your Response Style:**
+- NEVER mention "asterisk", "asterisks", or markdown formatting symbols in your spoken responses
+- When you see ** in text, understand it as emphasis but don't read it out loud
 - Be BRIEF and conversational (one sentence)
 - DON'T use emoticons, warnings symbols, or "ALERT" language
 - DON'T mention ABPI clause numbers or asterisks
@@ -422,12 +424,15 @@ async def check_abpi_compliance(call_data: dict):
 async def finalize_call(call_data: dict):
     """Finalize and save call record"""
     
-    if not call_data.get("onekey_id"):
-        raise HTTPException(status_code=400, detail="onekey_id is required for finalization")
+    # Accept either onekey_id or selected_doctor_id from frontend
+    onekey_id = call_data.get("onekey_id") or call_data.get("selected_doctor_id")
     
-    doctor = doctor_matcher.get_by_onekey_id(call_data["onekey_id"])
+    if not onekey_id:
+        raise HTTPException(status_code=400, detail="onekey_id or selected_doctor_id is required for finalization")
+    
+    doctor = doctor_matcher.get_by_onekey_id(onekey_id)
     if not doctor:
-        raise HTTPException(status_code=400, detail=f"Invalid onekey_id: {call_data['onekey_id']}")
+        raise HTTPException(status_code=400, detail=f"Invalid onekey_id: {onekey_id}")
     
     record = {
         "timestamp": datetime.utcnow().isoformat(),
@@ -437,7 +442,7 @@ async def finalize_call(call_data: dict):
             "created_at": datetime.utcnow().isoformat(),
             "source": "voice_recording",
             "version": "POC-0.5.0",
-            "onekey_id": call_data["onekey_id"]
+            "onekey_id": onekey_id
         }
     }
     
@@ -451,7 +456,7 @@ async def finalize_call(call_data: dict):
         "status": "success",
         "message": "Call record saved (POC: printed to console)",
         "record_id": f"CALL-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}",
-        "onekey_id": call_data["onekey_id"]
+        "onekey_id": onekey_id
     }
 
 if __name__ == "__main__":
