@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Optional, List
 import anthropic
@@ -219,8 +220,16 @@ except Exception as e:
     anthropic_client = None
     ai_checker = None
 
+# Serve the HTML frontend at root
 @app.get("/")
-async def root():
+async def read_root():
+    """Serve the HTML frontend"""
+    return FileResponse("index.html")
+
+# API info endpoint
+@app.get("/api")
+async def api_info():
+    """API information endpoint"""
     return {
         "service": "Pharma Call Recorder POC",
         "status": "running",
@@ -447,4 +456,4 @@ async def finalize_call(call_data: dict):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=5000)
