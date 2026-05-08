@@ -6,7 +6,7 @@
       "description": "Promoting use outside approved indication",
       "keywords": ["off-label", "unlicensed", "unapproved indication", "not indicated for"],
       "severity": "CRITICAL",
-      "response": "🛑 CRITICAL VIOLATION: Off-label promotion is illegal under ABPI Clause 6.2. I cannot record this statement. Please discuss only approved indications."
+      "response": "Off-label promotion isn't compliant with ABPI rules. Stick to approved indications only."
     },
     {
       "id": "unqualified_safety",
@@ -14,7 +14,7 @@
       "description": "Claims like 'no side effects', 'completely safe', 'zero risk'",
       "keywords": ["no side effects", "zero risk", "completely safe", "risk-free", "side effect free", "no adverse events", "perfectly safe"],
       "severity": "HIGH",
-      "response": "⚠️ COMPLIANCE ALERT: Unqualified safety claims violate ABPI Clause 6.4. Every medicine has risks. Consider: 'favorable safety profile with X% incidence of Y in [trial name].'"
+      "response": "According to ABPI, you can't claim a medicine has no side effects. Mention the actual safety profile with specific data."
     },
     {
       "id": "superlatives",
@@ -22,7 +22,7 @@
       "description": "Claims like 'best', 'most effective', 'only treatment'",
       "keywords": ["best", "most effective", "only treatment", "superior to all", "unmatched", "nothing compares", "best in class"],
       "severity": "HIGH",
-      "response": "⚠️ COMPLIANCE ALERT: Superlative claims require robust evidence (ABPI Clause 6.4). Consider specific data: 'X% improvement vs Y in Z trial.'"
+      "response": "Superlative claims like 'best' need robust clinical evidence per ABPI rules. Use specific trial data instead."
     },
     {
       "id": "gifts",
@@ -30,7 +30,7 @@
       "description": "Offering anything of value to influence prescribing",
       "keywords": ["free samples", "gift", "complimentary", "incentive", "I'll get you", "special deal"],
       "severity": "CRITICAL",
-      "response": "🛑 CRITICAL VIOLATION: Gifts/inducements violate ABPI Clause 27.1. Follow proper sample request process through company channels only."
+      "response": "Offering gifts or inducements doesn't comply with ABPI rules. Follow your company's proper sample request process."
     },
     {
       "id": "competitor_disparagement",
@@ -38,7 +38,7 @@
       "description": "Negative comments about competitors without data",
       "keywords": ["their drug is dangerous", "competitor is worse", "inferior product", "don't use"],
       "severity": "MEDIUM",
-      "response": "⚠️ Use data-based comparisons only. Instead of criticism, cite specific evidence: 'In trial X, our drug showed Y vs Z.'"
+      "response": "According to ABPI, you shouldn't criticize a competitor outside results of a clinical trial. Be factual and objective."
     },
     {
       "id": "pre_marketing",
@@ -46,8 +46,16 @@
       "description": "Promoting products before marketing authorization",
       "keywords": ["coming soon", "not yet approved", "awaiting authorization", "pre-launch"],
       "severity": "CRITICAL",
-      "response": "🛑 CRITICAL VIOLATION: Pre-marketing promotion violates ABPI Clause 6.2. Cannot promote unauthorized products."
+      "response": "Pre-marketing promotion isn't compliant with ABPI rules. You can only discuss authorized products."
+    },
+    {
+      "id": "expensive_hospitality",
+      "title": "Lavish Hospitality",
+      "description": "Inviting doctors to expensive venues or high-end restaurants",
+      "keywords": ["michelin star", "3 star restaurant", "luxury hotel", "expensive restaurant", "five star", "high-end venue"],
+      "severity": "HIGH",
+      "response": "Inviting a doctor to a luxury venue doesn't comply with ABPI rules on hospitality. Keep it modest and professional."
     }
   ],
-  "coaching_instructions": "When you detect these keywords in the rep's statement, INTERRUPT immediately with the specified response. Don't wait until end of call. Your job is to prevent violations in real-time, not just document them."
+  "coaching_instructions": "When you detect these patterns, mention the compliance issue briefly and suggest an alternative. Keep it conversational and helpful, not legalistic. Never mention asterisks or read out the ABPI rule clauses."
 }
