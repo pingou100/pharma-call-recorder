@@ -3,33 +3,360 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pharma Call Recorder</title>
+    <title>Pharma Call Recorder - Active Coaching</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; display: flex; justify-content: center; align-items: center; }
-        .container { max-width: 700px; width: 100%; background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); display: flex; flex-direction: column; max-height: 90vh; overflow: hidden; }
-        .header { padding: 30px 30px 0 30px; flex-shrink: 0; }
-        h1 { color: #333; font-size: 24px; text-align: center; margin-bottom: 5px; }
-        .subtitle { color: #666; font-size: 13px; text-align: center; margin-bottom: 15px; }
-        #statusBadge { display: inline-block; padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; background: #d1ecf1; color: #0c5460; text-align: center; width: 100%; }
-        .permission-helper { background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 15px; margin: 15px 30px; border-radius: 6px; font-size: 12px; display: none; flex-shrink: 0; }
-        .permission-helper strong { display: block; margin-bottom: 6px; }
-        .permission-link { background: #ffc107; color: #333; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block; margin-top: 6px; }
-        #conversation { 
-            flex: 1; 
-            overflow-y: auto; 
-            overflow-x: hidden;
-            padding: 15px 30px; 
-            background: white; 
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            min-height: 0;
+            max-height: 90vh;
         }
-        #conversation::-webkit-scrollbar { width: 6px; }
-        #conversation::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
-        #conversation::-webkit-scrollbar-thumb { background: #667eea; border-radius: 3px; }
-        #conversation::-webkit-scrollbar-thumb:hover { background: #5568d3; }
-        .message { margin-bottom: 12px; padding: 10px 14px; border-radius: 10px; max-width: 85%; word-wrap: break-word; font-size: 13px; line-height: 1.4; flex-shrink: 0; }
-        .message.user { background: #667eea; color: white; margin-left: auto
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        h1 { font-size: 28px; margin-bottom: 8px; }
+        .subtitle { font-size: 14px; opacity: 0.9; }
+        #statusBadge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(255,255,255,0.2);
+            margin-top: 15px;
+        }
+        #conversation {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .message {
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+        .message.user {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+        }
+        .message.assistant {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+        .message.alert {
+            background: #fff3cd;
+            border-left: 4px solid #ff9800;
+            color: #856404;
+        }
+        .input-section {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+        #transcript {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            min-height: 60px;
+            resize: vertical;
+        }
+        .controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #micButton {
+            flex: 1;
+            background: #667eea;
+            color: white;
+            font-size: 16px;
+        }
+        #micButton:hover { background: #5568d3; }
+        #micButton.recording {
+            background: #dc3545;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        #sendButton {
+            background: #28a745;
+            color: white;
+        }
+        #sendButton:hover { background: #218838; }
+        #sendButton:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .settings {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            font-size: 12px;
+        }
+        select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎙️ Pharma Call Recorder</h1>
+            <p class="subtitle">v0.4.0 - Active ABPI & Framework Coaching</p>
+            <div id="statusBadge">Ready</div>
+        </div>
+
+        <div id="conversation">
+            <div class="message assistant">
+                👋 Welcome! I'm your AI coach. I'll help you conduct compliant, effective doctor visits by:
+                <br><br>
+                ✅ Real-time ABPI compliance monitoring<br>
+                ✅ 6-phase selling framework guidance<br>
+                ✅ Doctor identification<br>
+                <br>
+                <strong>Start by telling me about your visit!</strong>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <textarea id="transcript" placeholder="Your speech will appear here... or type directly"></textarea>
+            
+            <div class="controls">
+                <button id="micButton">🎤 Hold to Speak</button>
+                <button id="sendButton">Send</button>
+            </div>
+
+            <div class="settings">
+                <label>
+                    <input type="checkbox" id="autoPlayback" checked>
+                    Auto-play responses
+                </label>
+                <select id="voiceSelect">
+                    <option value="">Loading voices...</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        const conversationHistory = [];
+        let recognition = null;
+        let synthesis = window.speechSynthesis;
+        let currentUtterance = null;
+
+        // Initialize speech recognition
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-GB';
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript + ' ';
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                document.getElementById('transcript').value = finalTranscript + interimTranscript;
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                updateStatus('Error: ' + event.error);
+            };
+        }
+
+        // Load voices
+        function loadVoices() {
+            const voices = synthesis.getVoices();
+            const voiceSelect = document.getElementById('voiceSelect');
+            voiceSelect.innerHTML = '';
+            
+            const ukVoices = voices.filter(v => v.lang.startsWith('en-GB'));
+            (ukVoices.length > 0 ? ukVoices : voices).forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.name;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                voiceSelect.appendChild(option);
+            });
+
+            if (ukVoices.length > 0) {
+                voiceSelect.value = ukVoices[0].name;
+            }
+        }
+
+        synthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+
+        // Mic button
+        const micButton = document.getElementById('micButton');
+        micButton.addEventListener('mousedown', () => {
+            if (recognition) {
+                recognition.start();
+                micButton.classList.add('recording');
+                micButton.textContent = '🔴 Recording...';
+                updateStatus('Listening');
+            }
+        });
+
+        micButton.addEventListener('mouseup', () => {
+            if (recognition) {
+                recognition.stop();
+                micButton.classList.remove('recording');
+                micButton.textContent = '🎤 Hold to Speak';
+                updateStatus('Processing');
+            }
+        });
+
+        // Send button
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+        document.getElementById('transcript').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        async function sendMessage() {
+            const transcript = document.getElementById('transcript').value.trim();
+            if (!transcript) return;
+
+            // Add user message
+            addMessage(transcript, 'user');
+            document.getElementById('transcript').value = '';
+            updateStatus('Processing');
+
+            // Stop any playing speech
+            synthesis.cancel();
+
+            try {
+                const response = await fetch(`${API_URL}/conversation`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: transcript,
+                        conversation_history: conversationHistory
+                    })
+                });
+
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+
+                const data = await response.json();
+                
+                // Add assistant message
+                addMessage(data.assistant_message, 'assistant');
+
+                // Update conversation history
+                conversationHistory.push(
+                    { role: 'user', content: transcript },
+                    { role: 'assistant', content: data.assistant_message }
+                );
+
+                // Speak response if enabled
+                if (document.getElementById('autoPlayback').checked) {
+                    speak(data.assistant_message);
+                }
+
+                updateStatus('Ready');
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage(`❌ Error: ${error.message}. Make sure backend is running on ${API_URL}`, 'alert');
+                updateStatus('Error');
+            }
+        }
+
+        function addMessage(text, type) {
+            const conversationDiv = document.getElementById('conversation');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = text;
+            conversationDiv.appendChild(messageDiv);
+            conversationDiv.scrollTop = conversationDiv.scrollHeight;
+        }
+
+        function speak(text) {
+            const voiceSelect = document.getElementById('voiceSelect');
+            const selectedVoice = voiceSelect.value;
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            const voices = synthesis.getVoices();
+            const voice = voices.find(v => v.name === selectedVoice);
+            if (voice) utterance.voice = voice;
+            
+            synthesis.speak(utterance);
+        }
+
+        function updateStatus(status) {
+            document.getElementById('statusBadge').textContent = status;
+        }
+
+        // Check backend on load
+        fetch(`${API_URL}/`)
+            .then(r => r.json())
+            .then(data => {
+                console.log('Backend connected:', data);
+                updateStatus('Ready ✅');
+            })
+            .catch(err => {
+                console.error('Backend not reachable:', err);
+                updateStatus('⚠️ Backend offline');
+                addMessage('⚠️ Cannot reach backend. Make sure server is running on ' + API_URL, 'alert');
+            });
+    </script>
+</body>
+</html>

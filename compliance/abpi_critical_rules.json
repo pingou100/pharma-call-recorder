@@ -1,0 +1,53 @@
+{
+  "critical_violations": [
+    {
+      "id": "off_label",
+      "title": "Off-Label Promotion",
+      "description": "Promoting use outside approved indication",
+      "keywords": ["off-label", "unlicensed", "unapproved indication", "not indicated for"],
+      "severity": "CRITICAL",
+      "response": "🛑 CRITICAL VIOLATION: Off-label promotion is illegal under ABPI Clause 6.2. I cannot record this statement. Please discuss only approved indications."
+    },
+    {
+      "id": "unqualified_safety",
+      "title": "Unqualified Safety Claims",
+      "description": "Claims like 'no side effects', 'completely safe', 'zero risk'",
+      "keywords": ["no side effects", "zero risk", "completely safe", "risk-free", "side effect free", "no adverse events", "perfectly safe"],
+      "severity": "HIGH",
+      "response": "⚠️ COMPLIANCE ALERT: Unqualified safety claims violate ABPI Clause 6.4. Every medicine has risks. Consider: 'favorable safety profile with X% incidence of Y in [trial name].'"
+    },
+    {
+      "id": "superlatives",
+      "title": "Unsubstantiated Superlatives",
+      "description": "Claims like 'best', 'most effective', 'only treatment'",
+      "keywords": ["best", "most effective", "only treatment", "superior to all", "unmatched", "nothing compares", "best in class"],
+      "severity": "HIGH",
+      "response": "⚠️ COMPLIANCE ALERT: Superlative claims require robust evidence (ABPI Clause 6.4). Consider specific data: 'X% improvement vs Y in Z trial.'"
+    },
+    {
+      "id": "gifts",
+      "title": "Gifts or Inducements",
+      "description": "Offering anything of value to influence prescribing",
+      "keywords": ["free samples", "gift", "complimentary", "incentive", "I'll get you", "special deal"],
+      "severity": "CRITICAL",
+      "response": "🛑 CRITICAL VIOLATION: Gifts/inducements violate ABPI Clause 27.1. Follow proper sample request process through company channels only."
+    },
+    {
+      "id": "competitor_disparagement",
+      "title": "Competitor Disparagement",
+      "description": "Negative comments about competitors without data",
+      "keywords": ["their drug is dangerous", "competitor is worse", "inferior product", "don't use"],
+      "severity": "MEDIUM",
+      "response": "⚠️ Use data-based comparisons only. Instead of criticism, cite specific evidence: 'In trial X, our drug showed Y vs Z.'"
+    },
+    {
+      "id": "pre_marketing",
+      "title": "Pre-Marketing Promotion",
+      "description": "Promoting products before marketing authorization",
+      "keywords": ["coming soon", "not yet approved", "awaiting authorization", "pre-launch"],
+      "severity": "CRITICAL",
+      "response": "🛑 CRITICAL VIOLATION: Pre-marketing promotion violates ABPI Clause 6.2. Cannot promote unauthorized products."
+    }
+  ],
+  "coaching_instructions": "When you detect these keywords in the rep's statement, INTERRUPT immediately with the specified response. Don't wait until end of call. Your job is to prevent violations in real-time, not just document them."
+}

@@ -1,4 +1,4 @@
-# main.py - Pharma Call Recorder with Fuzzy Doctor Disambiguation
+# main.py - Pharma Call Recorder with Active ABPI + Framework Coaching
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,73 +35,172 @@ doctor_matcher = DoctorMatcher(DOCTORS)
 # Initialize AI compliance checker (will be connected to Anthropic client on startup)
 ai_checker = None
 
+# ============================================================================
+# ENHANCED COACHING SYSTEM - Week 1 Implementation
+# ============================================================================
+
+def load_abpi_critical_rules():
+    """Load ABPI critical violation rules"""
+    try:
+        with open("compliance/abpi_critical_rules.json", "r") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"[WARNING] Could not load ABPI rules: {e}")
+        return {"critical_violations": [], "coaching_instructions": ""}
+
+def load_framework_coaching():
+    """Load selling framework coaching guide"""
+    try:
+        with open("frameworks/framework_coaching_guide.md", "r") as f:
+            return f.read()
+    except Exception as e:
+        print(f"[WARNING] Could not load framework guide: {e}")
+        return ""
+
+def build_enhanced_system_prompt():
+    """Build comprehensive system prompt with ABPI + Framework coaching"""
+    
+    abpi_rules = load_abpi_critical_rules()
+    framework_guide = load_framework_coaching()
+    
+    # Extract critical violations for quick reference
+    critical_violations_text = ""
+    for v in abpi_rules.get('critical_violations', []):
+        if v['severity'] in ['CRITICAL', 'HIGH']:
+            keywords_str = ', '.join(f'"{kw}"' for kw in v['keywords'][:3])
+            critical_violations_text += f"""
+**{v['title']}** (Severity: {v['severity']})
+- Watch for: {keywords_str}
+- Response: {v['response']}
+"""
+    
+    prompt = f"""You are an AI coach helping pharmaceutical sales representatives conduct compliant, effective doctor visits.
+
+## YOUR TWO ROLES
+
+### ROLE 1: ABPI COMPLIANCE GUARDIAN (Real-Time Monitoring)
+
+You actively MONITOR every statement the rep makes and INTERVENE immediately when you detect violations.
+
+**CRITICAL VIOLATIONS TO WATCH:**
+{critical_violations_text}
+
+**Your Response Pattern:**
+When you detect a violation:
+1. ⚠️ Flag it IMMEDIATELY with "COMPLIANCE ALERT: [violation type]"
+2. Explain why it's a problem (cite ABPI clause)
+3. Suggest compliant alternative phrasing with specific data
+4. Ask if rep wants to revise the statement
+
+**Example:**
+Rep: "CardioMax is the best treatment with no side effects"
+You: "⚠️ COMPLIANCE ALERT: Two violations detected:
+- 'best treatment' = unsubstantiated superlative (ABPI 6.4) - requires robust evidence
+- 'no side effects' = unqualified safety claim (ABPI 6.4) - no medicine is risk-free
+
+Consider: 'CardioMax showed 20% reduction in CV events vs placebo in PROGRESS trial, with 4.2% hyperkalemia incidence vs 7.8% competitor average.'
+
+Would you like me to record the revised statement?"
+
+**Severity Levels:**
+🛑 CRITICAL (refuse to record): Off-label, gifts/inducements, pre-marketing
+⚠️ HIGH (flag + require fix): Unqualified claims, superlatives
+💡 MEDIUM (suggest improvement): Vague statements, missing data
+
+---
+
+### ROLE 2: SELLING FRAMEWORK COACH (Proactive Guidance)
+
+{framework_guide}
+
+---
+
+## CONVERSATION FLOW
+
+1. **Opening:** "What's your specific goal for this visit?" (Phase 1: Purposeful Planning)
+2. **During Call:** 
+   - Monitor EVERY statement for ABPI violations
+   - Track framework phases completion
+   - Prompt for missing elements
+3. **Near End:** 
+   - Check if Voluntary & Active commitment secured (Phase 5 - CRITICAL)
+   - Ensure follow-up scheduled (Phase 6)
+4. **Before Finalize:** Confirm all phases complete, especially V&A commitment
+
+---
+
+## RESPONSE FORMAT
+
+For EACH rep message, respond in this structured order:
+
+1. **🛡️ COMPLIANCE CHECK** (Priority 1): 
+   - Any ABPI violations detected? → Address IMMEDIATELY before anything else
+   
+2. **📋 FRAMEWORK CHECK** (Priority 2):
+   - Which phase is rep currently in?
+   - Any phases missing? → Prompt gently
+   
+3. **💾 DATA EXTRACTION** (Priority 3):
+   - Record call details in JSON format
+   
+4. **➡️ NEXT GUIDANCE** (Priority 4):
+   - What should rep do next? Guide them forward
+
+---
+
+## CRITICAL RULES
+
+1. **NEVER ignore ABPI violations** - Flag immediately, every time
+2. **ALWAYS check for V&A commitment** - Most calls lack this critical element
+3. **COACH in real-time** - Don't wait until call ends
+4. **BE HELPFUL, not punitive** - Use "Consider" not "You violated"
+5. **REINFORCE good behavior** - "Excellent ABPI-compliant phrasing!"
+
+---
+
+## DOCTOR IDENTIFICATION RULES (Keep Existing)
+
+NEVER assume which doctor the rep visited - ALWAYS ask for confirmation:
+1. When rep mentions a doctor, search database and present ALL matching candidates
+2. Rep MUST explicitly confirm before proceeding
+3. If multiple matches, present ALL options with specialty, hospital, city
+4. Never proceed without explicit confirmation
+
+Example:
+Rep: "Just visited Dr. Dubois"
+You: "I found 2 doctors named Dubois:
+1. Dr. Marie Dubois - Cardiology, CHU Charleroi
+2. Dr. Olivier Dubois - Cardiology, AZ Sint-Jan
+Which one?"
+
+When doctor confirmed, continue with framework coaching.
+
+---
+
+Your goal: Help reps conduct **compliant, effective, well-structured** conversations that benefit patients.
+"""
+    
+    return prompt
+
+# ============================================================================
+# END ENHANCED COACHING SYSTEM
+# ============================================================================
+
 # Request/Response models
 class ConversationRequest(BaseModel):
     message: str
     conversation_history: Optional[List[dict]] = []
-    confirmed_onekey_id: Optional[str] = None  # Rep confirms this specific doctor
+    confirmed_onekey_id: Optional[str] = None
 
 class ConversationResponse(BaseModel):
     assistant_message: str
     extracted_data: Optional[dict] = None
-    doctor_candidates: Optional[List[dict]] = None  # Multiple possible matches
+    doctor_candidates: Optional[List[dict]] = None
     needs_doctor_confirmation: bool = False
     is_complete: bool = False
 
-# System prompt for Claude - CRITICAL: Never auto-select doctors
-SYSTEM_PROMPT = """You are an AI assistant helping pharmaceutical sales representatives document their doctor visits.
-
-CRITICAL RULES FOR DOCTOR IDENTIFICATION:
-1. NEVER assume which doctor the rep visited - ALWAYS ask for confirmation
-2. When the rep mentions a doctor, search the database and present ALL matching candidates
-3. The rep MUST explicitly confirm "Yes, that's the one" or select from options before proceeding
-4. If multiple doctors match (e.g., multiple "Dr. Dubois"), present ALL options and ask which one
-5. Never proceed to finalize a call without explicit doctor confirmation
-
-Your role:
-1. Have a natural conversation to extract call details (brand discussed, key points, next actions)
-2. When doctor info is mentioned, find matching candidates and ask for confirmation
-3. Present doctor options clearly: "I found X doctors matching that description: [list with specialty, hospital, city]"
-4. Wait for explicit confirmation before marking doctor as confirmed
-5. Once doctor is confirmed AND all call details collected, mark as ready to finalize
-
-When you have doctor candidates, respond with:
-- Your conversational message asking for confirmation
-- JSON block with extracted data
-- DOCTOR_CANDIDATES section listing all matches
-
-Response format:
-```json
-{
-  "brand": "string or null",
-  "call_objectives": ["list"],
-  "key_discussion_points": ["list"],
-  "agreements_reached": ["list"],
-  "next_actions": ["list"],
-  "doctor_info": {
-    "mentioned_name": "what the rep said",
-    "mentioned_hospital": "if mentioned",
-    "mentioned_city": "if mentioned",
-    "confirmed_onekey_id": null  // Only set after explicit confirmation
-  }
-}
-```
-
-DOCTOR_CANDIDATES: [list onekey_id values of matches, e.g., BE-HCP-00001, BE-HCP-00002]
-
-Example conversation:
-Rep: "Just visited Dr. Dubois in Charleroi"
-You: "I found 2 doctors named Dubois in Charleroi:
-1. Dr. Marie Dubois - Cardiology, CHU Charleroi
-2. Dr. Olivier Dubois - Cardiology, AZ Sint-Jan
-Which one was it?"
-
-Rep: "The cardiologist at CHU Charleroi"
-You: "Got it - Dr. Marie Dubois, Cardiology at CHU Charleroi. Is that correct?"
-
-Rep: "Yes"
-You: [NOW mark as confirmed] "Perfect! What did you discuss about [brand]?"
-"""
+# Build enhanced system prompt with coaching
+SYSTEM_PROMPT = build_enhanced_system_prompt()
 
 # Create Anthropic client once at startup
 def create_anthropic_client():
@@ -120,6 +219,14 @@ try:
     # Initialize AI compliance checker with the same client
     ai_checker = AIComplianceChecker(anthropic_client=anthropic_client)
     print("✅ AI compliance checker initialized")
+    
+    # Verify coaching resources loaded
+    test_rules = load_abpi_critical_rules()
+    test_framework = load_framework_coaching()
+    if test_rules.get('critical_violations'):
+        print(f"✅ Loaded {len(test_rules['critical_violations'])} ABPI rules")
+    if test_framework:
+        print(f"✅ Loaded framework coaching guide ({len(test_framework)} chars)")
 except Exception as e:
     print(f"❌ Failed to initialize: {e}")
     anthropic_client = None
@@ -130,14 +237,15 @@ async def root():
     return {
         "service": "Pharma Call Recorder POC",
         "status": "running",
-        "version": "0.3.0 - ABPI Compliance + Framework Validation",
+        "version": "0.4.0 - Enhanced Active Coaching",
         "doctors_loaded": len(DOCTORS),
         "anthropic_client": "ready" if anthropic_client else "not configured",
         "ai_checker": "ready" if ai_checker else "not configured",
         "features": [
+            "Real-time ABPI compliance coaching",
+            "6-phase selling framework guidance",
             "Fuzzy doctor matching",
-            "ABPI Code 2024 compliance checking",
-            "6-phase selling framework validation"
+            "Post-call compliance validation"
         ]
     }
 
@@ -156,10 +264,7 @@ async def search_doctors(
     city: str = None,
     min_confidence: float = 60.0
 ):
-    """
-    Search for doctors using fuzzy matching
-    Can use free text query OR specific criteria
-    """
+    """Search for doctors using fuzzy matching"""
     results = doctor_matcher.match(
         query=query,
         first_name=first_name,
@@ -177,9 +282,7 @@ async def search_doctors(
 
 @app.post("/conversation", response_model=ConversationResponse)
 async def conversation(request: ConversationRequest):
-    """
-    Main conversation endpoint with fuzzy doctor matching
-    """
+    """Main conversation endpoint with active coaching"""
     
     if not anthropic_client:
         raise HTTPException(status_code=500, detail="Anthropic client not initialized")
@@ -202,7 +305,7 @@ async def conversation(request: ConversationRequest):
             "content": "\n".join(context_parts)
         })
         
-        # Call Claude API
+        # Call Claude API with enhanced coaching prompt
         print(f"\n[DEBUG] Calling Claude API with {len(messages)} messages")
         response = anthropic_client.messages.create(
             model="claude-sonnet-4-20250514",
@@ -243,7 +346,6 @@ async def conversation(request: ConversationRequest):
             candidate_line = assistant_message.split("DOCTOR_CANDIDATES:")[1].split("\n")[0]
             onekey_ids = [id.strip() for id in candidate_line.strip("[] ").split(",")]
             
-            # Get full doctor info for each candidate
             doctor_candidates = []
             for onekey_id in onekey_ids:
                 doctor = doctor_matcher.get_by_onekey_id(onekey_id)
@@ -256,7 +358,6 @@ async def conversation(request: ConversationRequest):
         if extracted_data and extracted_data.get("doctor_info") and not doctor_candidates:
             doctor_info = extracted_data["doctor_info"]
             
-            # Search using mentioned info
             matches = doctor_matcher.match(
                 first_name=doctor_info.get("mentioned_first_name"),
                 last_name=doctor_info.get("mentioned_name"),
@@ -269,7 +370,7 @@ async def conversation(request: ConversationRequest):
                 doctor_candidates = matches
                 needs_confirmation = True
         
-        # Check if complete (has brand, doctor confirmed, and call details)
+        # Check if complete
         if extracted_data:
             has_brand = bool(extracted_data.get("brand"))
             has_doctor = bool(extracted_data.get("doctor_info", {}).get("confirmed_onekey_id"))
@@ -292,30 +393,7 @@ async def conversation(request: ConversationRequest):
 
 @app.post("/check_abpi_compliance")
 async def check_abpi_compliance(call_data: dict):
-    """
-    Check call data against ABPI Code of Practice 2024 + Selling Framework
-    
-    Request body:
-    {
-        "brand": "ProductName",
-        "onekey_id": "BE-HCP-00001",
-        "doctor": {"name": "Dr. X", "specialty": "Cardiology"},
-        "call_objectives": ["..."],
-        "key_discussion_points": ["..."],
-        "agreements_reached": ["..."],
-        "next_actions": ["..."]
-    }
-    
-    Returns:
-    {
-        "abpi_violations": {"critical": [], "high_risk": [], ...},
-        "framework_issues": [...],
-        "overall_assessment": "COMPLIANT" | "NEEDS_REVIEW" | "CRITICAL_VIOLATIONS",
-        "risk_score": 0-100,
-        "framework_score": 0-100,
-        "recommended_actions": [...]
-    }
-    """
+    """Check call data against ABPI Code of Practice 2024 + Selling Framework"""
     
     if not ai_checker:
         raise HTTPException(
@@ -324,10 +402,9 @@ async def check_abpi_compliance(call_data: dict):
         )
     
     try:
-        # Run compliance check
         result = ai_checker.check_compliance(
             call_data=call_data,
-            region="UK",  # MVP: UK only, future: pass as parameter
+            region="UK",
             brand=call_data.get("brand")
         )
         
@@ -343,34 +420,27 @@ async def check_abpi_compliance(call_data: dict):
 
 @app.post("/finalize")
 async def finalize_call(call_data: dict):
-    """
-    Finalize and save call record
-    Requires confirmed OneKey ID
-    """
+    """Finalize and save call record"""
     
-    # Validate that doctor is confirmed
     if not call_data.get("onekey_id"):
         raise HTTPException(status_code=400, detail="onekey_id is required for finalization")
     
-    # Verify OneKey ID exists
     doctor = doctor_matcher.get_by_onekey_id(call_data["onekey_id"])
     if not doctor:
         raise HTTPException(status_code=400, detail=f"Invalid onekey_id: {call_data['onekey_id']}")
     
-    # Add metadata
     record = {
         "timestamp": datetime.utcnow().isoformat(),
         "call_data": call_data,
-        "doctor": doctor,  # Full doctor info for reference
+        "doctor": doctor,
         "audit_trail": {
             "created_at": datetime.utcnow().isoformat(),
             "source": "voice_recording",
-            "version": "POC-0.2.0",
+            "version": "POC-0.4.0",
             "onekey_id": call_data["onekey_id"]
         }
     }
     
-    # POC: Print to console
     print("\n" + "="*60)
     print("FINALIZED CALL RECORD")
     print("="*60)
